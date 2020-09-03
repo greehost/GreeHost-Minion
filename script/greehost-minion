@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+use Mojolicious::Lite;
+use Object::Remote;
+use GreeHost::Maker;
+use GreeHost::Config;
+
+my $pg_url = $GreeHost::Config::MINION_CONNECT_URL;
+
+plugin 'Minion::Admin';
+plugin  Minion => { Pg => $pg_url };
+
+app->minion->add_task(build_project => sub {
+        my ( $job, $project ) = @_;
+        GreeHost::Maker->new->make_project( $project, $job );
+    }, 
+    { queue => 'build_project' },
+);
+
+app->start;
